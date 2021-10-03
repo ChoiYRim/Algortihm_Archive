@@ -72,7 +72,7 @@ void solution(int left,int right)
 
 long long find(int cur,int start,int end,int left,int right) // find the minimum index
 {
-    if(end < left || start > right) // 일부만 걸치거나 범위 이탈
+    if(end < left || start > right) // 범위 이탈
         return INF;
     if(start >= left && end <= right)
         return stree[cur];
@@ -82,10 +82,10 @@ long long find(int cur,int start,int end,int left,int right) // find the minimum
     long long left_result = find(cur*2,start,mid,left,right);
     long long right_result = find(cur*2+1,mid+1,end,left,right);
     
-    // 일부 구간만 겹치는 경우 or 범위 이탈한 경우
-    if(left_result == INF) // cur의 왼쪽 자식이 일부만 걸치거나 범위 이탈
+    // 일부 구간만 겹치는 경우
+    if(left_result == INF)
         return right_result;
-    else if(right_result == INF) // cur의 오른쪽 자식이 일부만 걸치거나 범위 이탈
+    else if(right_result == INF)
         return left_result;
     
     return height[left_result] < height[right_result] ? left_result : right_result;
