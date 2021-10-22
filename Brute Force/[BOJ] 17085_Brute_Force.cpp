@@ -15,13 +15,22 @@ struct Pos
 int N,M,ans;
 vector<string> v;
 vector<Pos> pos;
-bool visit[32][32] = {0,};
 int dy[4] = {-1,0,1,0};
 int dx[4] = {0,1,0,-1};
 
 inline bool range(int y,int x) { return ((0 <= y && y < N) && (0 <= x && x < M)); }
 
-void status(bool flag,int maxSize,int idx)
+inline int getArea(int maxSize) { return (1 + 4*maxSize); }
+
+void print(vector<int> sz)
+{
+    cout << "SIZE : [ ";
+    for(int i = 0; i < sz.size(); i++)
+        cout << sz[i] << " ";
+    cout << "]\n";
+}
+
+void status(char flag,int maxSize,int idx)
 {
     int y = pos[idx].y,x = pos[idx].x;
     
@@ -32,7 +41,7 @@ void status(bool flag,int maxSize,int idx)
             int ny = y+size*dy[i];
             int nx = x+size*dx[i];
             
-            visit[ny][nx] = flag;
+            v[ny][nx] = flag;
         }
     }
 }
@@ -49,7 +58,7 @@ int getSize(int y,int x)
             int ny = y+size*dy[i];
             int nx = x+size*dx[i];
             
-            if(!range(ny,nx) || visit[ny][nx] || v[ny][nx] == '.')
+            if(!range(ny,nx) || v[ny][nx] != '#')
             {
                 check = false;
                 break;
@@ -62,56 +71,9 @@ int getSize(int y,int x)
     return maxSize;
 }
 
-int getArea(int maxSize)
-{
-    int area = 1;
-    
-    for(int i = 0; i < maxSize; i++)
-        area += 4;
-    
-    return area;
-}
-
-void print(vector<int> sz)
-{
-    cout << "SIZE : [ ";
-    for(int i = 0; i < sz.size(); i++)
-        cout << sz[i] << " ";
-    cout << "]\n";
-}
-
-void DFS(vector<int> sz)
-{
-    if(sz.size() >= 2)
-    {
-        int result = sz[0]*sz[1];
-        
-        //print(sz);
-        
-        ans = MAX(ans,result);
-        return;
-    }
-    
-    for(int i = 0; i < (int)pos.size(); i++)
-    {
-        int y = pos[i].y,x = pos[i].x;
-        
-        if(!visit[y][x])
-        {
-            int maxSize = getSize(y,x);
-            
-            status(true,maxSize,i);
-            sz.push_back(getArea(maxSize));
-            DFS(sz);
-            sz.pop_back();
-            status(false,maxSize,i);
-        }
-    }
-}
-
 int main(int argc,char* argv[])
 {
-    ans = 1;
+    ans = 0;
     
     cin >> N >> M;
     for(int i = 0; i < N; i++)
@@ -124,8 +86,25 @@ int main(int argc,char* argv[])
         }
         v.push_back(str);
     }
-    
-    DFS({});
+        
+    for(int i = 0; i < (int)pos.size()-1; i++)
+    {
+        int iy = pos[i].y,ix = pos[i].x;
+        int imax = getSize(iy,ix);
+        
+        for(int j = 0; j <= imax; j++)
+        {
+            status('*',j,i);
+            for(int k = i+1; k < (int)pos.size(); k++)
+            {
+                int ky = pos[k].y,kx = pos[k].x;
+                int kmax = getSize(ky,kx);
+                
+                ans = MAX(ans,(getArea(j)*(getArea(kmax))));
+            }
+            status('#',j,i);
+        }
+    }
     
     cout << ans << '\n';
     return 0;
