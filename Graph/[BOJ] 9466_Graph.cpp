@@ -1,89 +1,56 @@
-#include <queue>
-#include <vector>
-#include <cstring>
-#include <iostream>
+// Reference : https://jaimemin.tistory.com/674
 
-#define NUM 100001
+#include <iostream>
+#include <cstring> //memset
 
 using namespace std;
+const int MAX = 100000 + 1;
 
-int T,N;
-vector<int> v,result;
-vector<bool> visit;
+int N, cnt;
+int want[MAX];
+bool visited[MAX];
+bool done[MAX]; //방문이 끝났는지 여부
 
-void input()
+void DFS(int nodeNum)
 {
-    v.clear();
-    cin >> N;
-    v = vector<int>(N+1,0);
-    for(int i = 1; i <= N; i++)
+    visited[nodeNum] = true;
+    int next = want[nodeNum];
+    
+    if (!visited[next])
+        DFS(next);
+    
+    //이미 방문했지만 방문이 끝난 노드가 아니라면 사이
+    else if (!done[next])
     {
-        int student; cin >> student;
-        v[i] = student;
+        //팀원을 모두 센다
+        for (int i = next; i != nodeNum; i = want[i])
+            cnt++;
+        cnt++; //자기 자신을 센다
     }
-    visit = vector<bool>(N+1,false);
+    done[nodeNum] = true; //더 이상 해당 노드를 방문할 일이 없다
 }
 
 int main(void)
 {
+    int T;
     cin >> T;
-    while(T--)
-    {
-        int sum = 0;
-        
-        input();
-        
-        for(int start = 1; start <= N; start++)
-        {
-            if(visit[start])
-                continue;
-            
-            int cnt = 0;
-            bool check = false;
-            queue<int> q;
-            vector<int> node;
-            vector<bool> local(N+1,false);
-            
-            q.push(start);
-            while(!q.empty())
-            {
-                int cur = q.front();
-                int next = v[cur];
-                q.pop();
-                
-                cnt++;
-                if(local[cur])
-                    break;
-                
-                visit[cur] = true;
-                local[cur] = true;
-                node.push_back(cur);
-
-                if(next != start)
-                {
-                    q.push(next);
-                    continue;
-                }
-                
-                check = true;
-                break;
-            }
-            
-            if(check)
-                sum += cnt;
-            else
-            {
-                for(int i = 0; i < (int)node.size(); i++)
-                {
-                    visit[node[i]] = false;
-                }
-            }
-        }
-        
-        result.push_back(N-sum);
-    }
     
-    for(int i = 0; i < (int)result.size(); i++)
-        cout << result[i] << '\n';
+    for(int i = 0; i < T; i++)
+    {
+        memset(visited, false, sizeof(visited));
+        memset(done, false, sizeof(done));
+        
+        cin >> N;
+        
+        for (int j = 1; j <= N; j++)
+            cin >> want[j];
+        
+        cnt = 0;
+        for (int j = 1; j <= N; j++)
+            if (!visited[j])
+                DFS(j); //팀을 이루는 사람들을 센다
+                
+        cout << N - cnt << endl;
+    }
     return 0;
 }
