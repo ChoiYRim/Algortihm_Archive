@@ -6,21 +6,21 @@ using namespace std;
 
 const int kMax = 0x7fffffff;
 
-struct Status
+struct Pos
 {
-    int y; // row
-    int x; // col
-    int d; // dir
+    int y;
+    int x;
+    int d;
     int cnt;
 };
 
 int M,N;
+int dy[5] = {0,0,0,1,-1};
+int dx[5] = {0,1,-1,0,0};
 bool Map[128][128] = {0,};
-Status start,dst;
-int dy[4] = {-1,0,0,1}; // north , east , west , south
-int dx[4] = {0,1,-1,0}; // same with above
-queue<Status> q;
-vector<vector<int>> visit;
+vector<vector<vector<int>>> visit;
+Pos start,dst;
+queue<Pos> q;
 
 inline bool range(int y,int x) { return ((0 < y && y <= M) && (0 < x && x <= N)); }
 
@@ -30,67 +30,52 @@ int direction(int cur,int next)
 {
     if(cur == next)
         return 0;
-    
-    if(cur == 0)
-    {
-        if(next == 3)
-            return 2;
-        else
-            return 1;
-    }
-    else if(cur == 1)
+    if(cur == 1)
     {
         if(next == 2)
             return 2;
-        else
-            return 1;
+        return 1;
     }
     else if(cur == 2)
     {
         if(next == 1)
             return 2;
-        else
-            return 1;
-    }
-    
-    if(next == 0)
-        return 2;
-    else
         return 1;
-}
-
-void input()
-{
-    cin >> M >> N;
-    for(int y = 1; y <= M; y++)
-    {
-        for(int x = 1; x <= N; x++)
-        {
-            cin >> Map[y][x];
-        }
     }
-    cin >> start.y >> start.x >> start.d;
-    cin >> dst.y >> dst.x >> dst.d;
+    else if(cur == 3)
+    {
+        if(next == 4)
+            return 2;
+        return 1;
+    }
     
-    start.d %= 4;
-    dst.d %= 4;
-    
-    visit = vector<vector<int>>(M+1,vector<int>(N+1,kMax));
+    if(next == 3)
+        return 2;
+    return 1;
 }
 
 int main()
 {
     int result = kMax;
     
-    input();
+    cin >> M >> N;
+    for(int y = 1; y <= M; y++)
+    {
+        for(int x = 1; x <= N; x++)
+            cin >> Map[y][x];
+    }
+    cin >> start.y >> start.x >> start.d;
+    cin >> dst.y >> dst.x >> dst.d;
+    visit = vector<vector<vector<int>>>(5,vector<vector<int>>(M+1,vector<int>(N+1,kMax)));
     
+    visit[start.d][start.y][start.x] = 0;
     q.push({start.y,start.x,start.d,0});
     while(!q.empty())
     {
         int turn;
-        Status cur = q.front();
+        Pos cur = q.front();
         q.pop();
-                
+        
         if(cur.y == dst.y && cur.x == dst.x)
         {
             turn = direction(cur.d,dst.d);
@@ -98,27 +83,22 @@ int main()
             continue;
         }
         
-        for(int dir = 0; dir < 4; dir++)
+        for(int dir = 1; dir <= 4; dir++)
         {
-            int mdist = 0;
             turn = direction(cur.d,dir);
+            
             for(int dist = 1; dist <= 3; dist++)
             {
                 int ny = cur.y+dist*dy[dir];
                 int nx = cur.x+dist*dx[dir];
                 
-                if(!range(ny,nx) || Map[ny][nx] || visit[ny][nx] < cur.cnt+turn+1)
+                if(!range(ny,nx) || Map[ny][nx])
+                    break;
+                if(cur.cnt+turn+1 > visit[dir][ny][nx])
                     break;
                 
-                mdist = dist;
-            }
-            for(int dist = 1; dist <= mdist; dist++)
-            {
-                int ny = cur.y+dist*dy[dir];
-                int nx = cur.x+dist*dx[dir];
-                
-                visit[ny][nx] = cur.cnt+turn+1;
-                q.push({ny,nx,dir,cur.cnt+turn+1});
+                visit[dir][ny][nx] = cur.cnt+1+turn;
+                q.push({ny,nx,dir,cur.cnt+1+turn});
             }
         }
     }
