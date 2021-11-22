@@ -1,49 +1,41 @@
-#include <vector>
 #include <iostream>
 
 using namespace std;
 
-typedef long long ll;
+int N,S,ans = 0;
+int num[32] = {0,};
+int visit[32] = {0,};
 
-ll S;
-int N,ans = 0;
-vector<int> v;
-bool visit[32] = {0,};
-
-void DFS(ll cur,int cnt,int depth)
+void DFS(int idx,int sum,int cnt)
 {
-    if(cnt <= 0)
+    if(!cnt)
     {
-        if(cur != S)
-            return;
-        ans++;
+        if(sum == S)
+            ans++;
         return;
     }
     
-    for(int i = depth; i < N; i++)
+    for(int i = idx; i < N; i++)
     {
         if(!visit[i])
         {
-            visit[i] = true;
-            DFS(cur+v[i],cnt-1,i);
-            visit[i] = false;
+            visit[i] = 1;
+            sum += num[i];
+            DFS(i+1,sum,cnt-1);
+            sum -= num[i];
+            visit[i] = 0;
         }
     }
 }
 
-int main(int argc,char* argv[])
+int main()
 {
     cin >> N >> S;
     for(int i = 0; i < N; i++)
-    {
-        int tmp; cin >> tmp;
-        v.push_back(tmp);
-    }
+        cin >> num[i];
     
-    for(int i = 1; i <= N; i++)
-    {
-        DFS(0,i,0);
-    }
+    for(int cnt = 1; cnt <= N; cnt++)
+        DFS(0,0,cnt);
     
     cout << ans << '\n';
     return 0;
