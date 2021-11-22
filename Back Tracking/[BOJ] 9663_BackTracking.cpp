@@ -1,55 +1,49 @@
+#include <vector>
 #include <iostream>
+#include <algorithm>
+
+#define ABS(x) (x >= 0 ? x : -x)
 
 using namespace std;
 
-int N,ans = 0;
-bool Map[16][16] = {0,};
-int dy[8] = {-1,-2,-2,-1,1,2,2,1};
-int dx[8] = {-2,-1,1,2,2,1,-1,-2};
+int N,result = 0;
+vector<int> column; // {y,x}
 
-inline bool range(int y,int x) { return ((0 <= y && y < N) && (0 <= x && x < N)); }
-
-void check(int y,int x,bool b)
+void DFS(int y,int x,int cnt)
 {
-    for(int i = 0; i < 8; i++)
+    if(cnt == N)
     {
-        int ny = y+dy[i];
-        int nx = x+dx[i];
-        
-        if(range(ny,nx))
-            Map[ny][nx] = b;
-    }
-}
-
-void DFS(int depth,int cnt)
-{
-    if(depth >= N*N)
-    {
-        if(cnt == N)
-            ans++;
+        result++;
         return;
     }
     
-    int y = depth/N;
-    int x = depth%N;
-    
-    if(Map[y][x])
+    for(int i = 0; i < N; i++) // 열 번호
     {
-        DFS(depth+1,cnt);
-        return;
+        bool check = true;
+
+        for(int j = 0; j < (int)column.size(); j++) // j : 행 번호 , column[j] : 열 번호
+        {
+            if(j == y || i == column[j] || (ABS((j-y)) == ABS((i-column[j]))))
+            {
+                check = false;
+                break;
+            }
+        }
+        if(check)
+        {
+            column.push_back(i);
+            DFS(y+1,i,cnt+1);
+            column.pop_back();
+        }
     }
-    
-    Map[y][x] = true;
-    check(y,x,true);
-    DFS(depth+1,cnt+1);
-    check(y,x,false);
-    Map[y][x] = false;
 }
 
-int main()
+int main(int argc, const char * argv[])
 {
     cin >> N;
-    DFS(0,0);
-    cout << ans << '\n';
+    
+    DFS(0,0,0);
+    
+    cout << result << '\n';
     return 0;
 }
