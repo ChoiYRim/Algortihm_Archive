@@ -49,8 +49,8 @@ int main(int argc,char* argv[])
     for(int i = 0; i < N*N; i++)
     {
         ll ab = AB[i];
-        ll low = std::lower_bound(CD, CD+N*N, -ab)-CD;
-        ll upp = std::upper_bound(CD, CD+N*N, -ab)-CD;
+        ll low = std::lower_bound(CD, CD+N*N, -ab)-CD; // -ab 값이 존재하는 가장 빠른 인덱스, 없으면 -ab보다 큰 가장 빠른 인덱스
+        ll upp = std::upper_bound(CD, CD+N*N, -ab)-CD; // -ab 값을 초과하는 값들 중에서 가장 빠른 인덱스
         
         if(CD[low] == -ab)
             ans += (upp-low);
