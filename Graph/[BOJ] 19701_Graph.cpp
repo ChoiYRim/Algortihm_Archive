@@ -1,78 +1,81 @@
-// 답지 참조
-
-#include <queue>
-#include <vector>
 #include <iostream>
 #include <algorithm>
+#include <queue>
+#include <climits>
 
 using namespace std;
+using ll = long long;
+const ll INF = LONG_LONG_MAX;
 
-typedef long long ll;
+int V,E;
+const int MAX = 1E9;
+vector<vector<pair<int,ll>>> graph;
 
-int N, M;
-const int P = 100000;
-const ll S = 1E9;
-const ll INF = 1E18;
-vector<pair<ll, int>> adj[200005];
-ll dist[200005];
-priority_queue<pair<ll, int>> pq;
-
-void add_edge(int u, int v, ll w)
+struct Edge
 {
-    adj[u].push_back({w, v});
+    int idx;
+    ll weight;
+    
+    inline bool operator<(const Edge& e) const { return weight < e.weight; }
+    inline bool operator>(const Edge& e) const { return weight > e.weight; }
+};
+
+void input()
+{
+    ios_base::sync_with_stdio(0);
+    cin.tie(0); cout.tie(0);
+    
+    cin >> V >> E;
+    graph = vector<vector<pair<int,ll>>>(2*(V+1));
+    for(int i = 0; i < E; i++)
+    {
+        int u,v,t,k;
+        cin >> u >> v >> t >> k;
+        
+        // 2개의 층으로 나눔
+        // 1.
+        graph[u].push_back({v,t});
+        graph[v].push_back({u,t});
+        
+        // 2.
+        graph[u+V+1].push_back({v+V+1,t});
+        graph[v+V+1].push_back({u+V+1,t});
+        
+        // 3. 돈가쓰를 먹었을 경우 (MAX를 더하는건 음수 가중치를 방지하기 위한 의미없는 수)
+        graph[u].push_back({v+V+1,MAX+t-k});
+        graph[v].push_back({u+V+1,MAX+t-k});
+    }
 }
 
 int main()
 {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
+    input();
     
-    cin >> N >> M;
-    while (M--)
-    {
-        int u, v, t, k;
-        cin >> u >> v >> t >> k;
-        
-        add_edge(u, v, t);
-        add_edge(v, u, t);
-        
-        add_edge(P+u, P+v, t);
-        add_edge(P+v, P+u, t);
-        
-        add_edge(u, P+v, S+t-k);
-        add_edge(v, P+u, S+t-k);
-    }
-    
-    for (int i = 1; i <= P+N; i++)
-        dist[i] = INF;
+    vector<ll> dist(2*V+2,INF);
+    priority_queue<Edge,vector<Edge>,greater<Edge>> pq;
     
     dist[1] = 0;
-    pq.push({0, 1});
-    while (!pq.empty())
+    pq.push({1,0});
+    while(!pq.empty())
     {
-        ll _; int u;
-        tie(_, u) = pq.top();
+        int cur = pq.top().idx;
+        ll weight = pq.top().weight;
         pq.pop();
-        _ = -_; // 기본 pq가 최소 힙이기 때문에
         
-        if (_ > dist[u])
-            continue;
-        
-        for (auto p: adj[u])
+        for(auto& edge : graph[cur])
         {
-            ll w; int v;
-            tie(w, v) = p;
+            int next = edge.first;
+            ll weight_to_next = edge.second;
             
-            ll dist_v = dist[u] + w;
-            
-            if (dist_v < dist[v])
+            if(dist[next] > weight+weight_to_next)
             {
-                pq.push({-dist_v, v});
-                dist[v]  = dist_v;
+                pq.push({next,weight+weight_to_next});
+                dist[next] = weight+weight_to_next;
             }
         }
     }
     
-    for (int i = 2; i <= N; i++)
-        cout << dist[i+P] - S << '\n';
+    for(size_t i = 2; i <= V; i++)
+        cout << dist[i+V+1] - MAX << '\n';
+    return 0;
 }
