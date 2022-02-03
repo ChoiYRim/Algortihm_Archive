@@ -1,106 +1,85 @@
-#include <iostream>
-#include <vector>
-#include <string>
+#include <cstdio>
 #include <queue>
+#include <vector>
+#include <iostream>
+#include <algorithm>
 
 using namespace std;
 
-const int kMax = 0x7fffffff;
-
-struct Pos
-{
-    int y;
-    int x;
-    int k; // wall
-};
-
 int N,M,K;
+vector<vector<int>> map;
+vector<vector<vector<int>>> visit;
 int dy[4] = {-1,0,1,0};
 int dx[4] = {0,1,0,-1};
-bool Map[1024][1024] = {0,};
-vector<vector<vector<int>>> visit;
-queue<Pos> q;
 
-inline int MIN(int a,int b) { return (a > b ? b : a); }
-
-inline bool range(int y,int x) { return ((1 <= y && y <= N) && (1 <= x && x <= M)); }
+inline bool range(int y,int x) { return ((y >= 0 && y < N) && (x >= 0 && x < M)); }
 
 void input()
 {
     cin >> N >> M >> K;
-    for(int y = 1; y <= N; y++)
+    map = vector<vector<int>>(N,vector<int>(M,0));
+    visit = vector<vector<vector<int>>>(16,vector<vector<int>>(N,vector<int>(M,0)));
+    for(int i = 0; i < N; i++)
     {
-        string tmp; cin >> tmp;
-        for(int x = 0; x < M; x++)
+        for(int j = 0; j < M; j++)
         {
-            if(tmp[x] != '0')
-                Map[y][x+1] = 1;
-            else
-                Map[y][x+1] = 0;
+            scanf("%1d", &map[i][j]);
         }
     }
-    
-    // [벽을 부순 적 있는가?][높이][너비]
-    visit = vector<vector<vector<int>>>(K+1,vector<vector<int>>(N+1,vector<int>(M+1,kMax)));
-    visit[0][1][1] = 1;
-    q.push({1,1,false});
 }
 
 int solve()
 {
-    int ret = kMax;
+    struct Node
+    {
+        int y; // row
+        int x; // col
+        int k; // K
+        int d; // distance
+    };
     
+    queue<Node> q;
+    
+    q.push({0,0,0,1});
+    visit[0][0][0] = 1;
     while(!q.empty())
     {
-        Pos cur = q.front();
+        int y = q.front().y;
+        int x = q.front().x;
+        int k = q.front().k;
+        int d = q.front().d;
         q.pop();
         
-        if(cur.y == N && cur.x == M)
-            continue;
+        if(y == N-1 && x == M-1)
+            return d;
         
         for(int i = 0; i < 4; i++)
         {
-            int ny = cur.y+dy[i];
-            int nx = cur.x+dx[i];
+            int ny = y+dy[i];
+            int nx = x+dx[i];
             
-            if(range(ny,nx))
+            if(!range(ny,nx))
+                continue;
+            if(!map[ny][nx] && !visit[k][ny][nx]) // 0
             {
-                int value = visit[cur.k][cur.y][cur.x];
-                
-                if(!Map[ny][nx])
-                {
-                    if(visit[cur.k][ny][nx] > value+1)
-                    {
-                        visit[cur.k][ny][nx] = value+1;
-                        q.push({ny,nx,cur.k});
-                    }
-                }
-                else
-                {
-                    if(cur.k < K && visit[cur.k][ny][nx] > value+1)
-                    {
-                        visit[cur.k+1][ny][nx] = value+1;
-                        q.push({ny,nx,cur.k+1});
-                    }
-                }
+                q.push({ny,nx,k,d+1});
+                visit[k][ny][nx] = 1;
+            }
+            else if(map[ny][nx] == 1 && k < K && !visit[k+1][ny][nx])
+            {
+                q.push({ny,nx,k+1,d+1});
+                visit[k+1][ny][nx] = 1;
             }
         }
     }
     
-    for(int i = 0; i <= K; i++)
-    {
-        if(visit[i][N][M] != kMax)
-            ret = MIN(ret,visit[i][N][M]);
-    }
-    
-    if(ret != kMax)
-        return ret;
     return -1;
 }
 
 int main()
 {
     input();
-    cout << solve() << '\n';
+    
+    printf("%d\n", solve());
     return 0;
 }
