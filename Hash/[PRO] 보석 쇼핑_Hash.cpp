@@ -39,28 +39,6 @@ vector<int> solution(vector<string> gems)
     
     for(int i = 0; i < gems.size(); i++)
     {
-        if(gem.find(gems[i]) != gem.end())
-        {
-            gem[gems[i]] = i+1;
-            v[idx[gems[i]]] = i+1;
-            if(gem.size() == cnt)
-            {
-                left = *min_element(v.begin(), v.end());
-                right = *max_element(v.begin(), v.end());
-                if(len > right-left)
-                {
-                    len = right-left;
-                    answer = {left,right};
-                }
-                else if(len == right-left)
-                {
-                    if(answer[0] > left)
-                        answer = {left,right};
-                }
-            }
-            continue;
-        }
-        
         gem[gems[i]] = i+1;
         v[idx[gems[i]]] = i+1;
         if(gem.size() == cnt)
