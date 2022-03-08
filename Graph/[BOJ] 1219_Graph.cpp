@@ -1,100 +1,98 @@
 #include <queue>
 #include <vector>
-#include <climits>
+#include <string>
 #include <iostream>
 #include <algorithm>
+#include <climits>
 
 using namespace std;
 using ll = long long;
 
-int N,M,start,last;
-vector<ll> pays;
-vector<pair<int,pair<int,ll>>> edges;
-
-int main()
+struct Edge
 {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
-    
-    cin >> N >> start >> last >> M;
+    int from;
+    int to;
+    ll cost;
+};
+
+int N,M,S,E;
+vector<ll> pays;
+vector<Edge> edges;
+
+void input()
+{
+    scanf("%d%d%d%d", &N, &S, &E, &M);
     for(int i = 0; i < M; i++)
     {
-        int src,dst;
-        ll weight;
-        cin >> src >> dst >> weight;
-        edges.push_back({src,{dst,weight}});
+        int from,to;
+        ll cost;
+        scanf("%d%d%lld", &from, &to, &cost);
+        edges.push_back({from,to,cost});
     }
     for(int i = 0; i < N; i++)
     {
-        ll pay; cin >> pay;
+        ll pay;
+        scanf("%lld", &pay);
         pays.push_back(-pay);
     }
-    for(auto& e : edges)
+    for(auto& edge : edges)
     {
-        int dst = e.second.first;
-        ll& weight = e.second.second;
+        int to = edge.to;
+        ll& cost = edge.cost;
         
-        weight += pays[dst];
+        cost += pays[to];
     }
+}
+
+string bellman_ford()
+{
+    bool is_cycle = false;
+    vector<ll> dist(N,LONG_LONG_MAX),new_dist;
     
-    bool cycle = false;
-    vector<ll> dist(N,LONG_LONG_MAX);
-    dist[start] = pays[start];
-    
-    // N-1번 반복
+    dist[S] = pays[S];
     for(int i = 0; i < N-1; i++)
     {
-        for(auto& e : edges)
+        for(auto& edge : edges)
         {
-            int src = e.first;
-            int dst = e.second.first;
-            ll weight = e.second.second;
+            int from = edge.from;
+            int to = edge.to;
+            ll cost = edge.cost;
             
-            if(dist[src] == LONG_LONG_MAX)
-                continue;
+            if(dist[from] == LONG_LONG_MAX) continue;
             
-            if(dist[dst] > dist[src]+weight)
+            if(dist[to] > dist[from]+cost)
             {
-                dist[dst] = dist[src]+weight;
+                dist[to] = dist[from]+cost;
             }
         }
     }
+    if(dist[E] == LONG_LONG_MAX)
+        return "gg";
     
-    if(dist[last] == LONG_LONG_MAX)
+    new_dist = dist;
+    for(auto& edge : edges)
     {
-        cout << "gg" << endl;
-        return 0;
-    }
-    
-    vector<ll> new_dist = dist;
-    for(auto& e : edges)
-    {
-        int src = e.first;
-        int dst = e.second.first;
-        ll weight = e.second.second;
+        int from = edge.from;
+        int to = edge.to;
+        ll cost = edge.cost;
         
-        if(dist[src] == LONG_LONG_MAX)
-            continue;
+        if(dist[from] == LONG_LONG_MAX) continue;
         
-        if(dist[dst] > dist[src]+weight)
+        if(dist[to] > dist[from]+cost)
         {
-            cycle = true;
-            new_dist[dst] = new_dist[src]+weight;
+            is_cycle = true;
+            new_dist[to] = new_dist[from]+cost;
         }
     }
     
-    if(cycle)
+    if(is_cycle)
     {
-        for(auto i = 0; i < dist.size(); i++)
+        for(int i = 0; i < dist.size(); i++)
         {
-            if(dist[i] != new_dist[i]) // 사이클이 발생한 지점
+            if(dist[i] != new_dist[i])
             {
-                bool on = false,off = false; // 시작점이 cycle에 닿을 수 있어? / cycle에서 도착점에 갈 수 있음?
-                
-                if(dist[i] != LONG_LONG_MAX) // 시작점이 cycle에 갈 수 있음
-                    on = true;
-                 
-                bool visit[64] = {0,};
+                bool reach = false;
+                vector<bool> visit(N+1,0);
                 queue<int> q;
                 
                 visit[i] = true;
@@ -104,19 +102,17 @@ int main()
                     int cur = q.front();
                     q.pop();
                     
-                    if(cur == last)
+                    if(cur == E)
                     {
-                        off = true;
+                        reach = true;
                         break;
                     }
                     
-                    for(auto& e : edges)
+                    for(auto& edge : edges)
                     {
-                        if(e.first != cur)
-                            continue;
+                        if(edge.from != cur) continue;
                         
-                        int next = e.second.first;
-                        
+                        int next = edge.to;
                         if(!visit[next])
                         {
                             visit[next] = true;
@@ -124,15 +120,18 @@ int main()
                         }
                     }
                 }
-                
-                if(on && off)
-                {
-                    cout << "Gee" << endl;
-                    return 0;
-                }
+                if(reach)
+                    return "Gee";
             }
         }
     }
-    cout << -dist[last] << endl;
+    
+    return to_string(-dist[E]);
+}
+
+int main(int argc,char* argv[])
+{
+    input();
+    cout << bellman_ford() << endl;
     return 0;
 }
