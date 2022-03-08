@@ -1,60 +1,67 @@
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
+const int INF = 987654321;
 
 int V,E;
-int dp[512][512]={0,};
+vector<vector<int>> edges;
+vector<vector<int>> dp;
 
-inline int MIN(int a,int b) { return (a > b ? b : a); }
-
-int main()
+void input()
 {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
-    
-    int ans = 987654321;
-    
-    cin >> V >> E;
-    for(int i = 1; i <= V; i++)
-        fill(dp[i], dp[i]+512, 987654321);
+    scanf("%d%d", &V, &E);
+    dp = vector<vector<int>>(V+1,vector<int>(V+1,INF));
     for(int i = 0; i < E; i++)
     {
-        int u,v,w; cin >> u >> v >> w;
-        dp[u][v] = w;
+        int from,to,cost;
+        scanf("%d%d%d", &from, &to, &cost);
+        dp[from][to] = cost;
     }
-    
-    for(int u = 1; u <= V; u++)
+}
+
+int solve()
+{
+    for(int mid = 1; mid <= V; mid++)
     {
-        for(int v = 1; v <= V; v++)
+        for(int from = 1; from <= V; from++)
         {
-            for(int m = 1; m <= V; m++)
+            for(int to = 1; to <= V; to++)
             {
-                dp[u][v] = MIN(dp[u][v],dp[u][m]+dp[m][v]);
+                if(dp[from][mid] == INF || dp[mid][to] == INF)
+                    continue;
+                dp[from][to] = min(dp[from][to],dp[from][mid]+dp[mid][to]);
             }
         }
     }
     
-    bool check = false;
-    for(int u = 1; u <= V; u++)
+    bool is_exist = false;
+    int result = INF;
+    
+    for(int from = 1; from <= V; from++)
     {
-        for(int v = 1; v <= V; v++)
+        for(int to = 1; to <= V; to++)
         {
-            if(u != v)
+            if(from != to)
             {
-                if(dp[u][v] < 987654321 && dp[v][u] < 987654321)
+                if(dp[from][to] != INF && dp[to][from] != INF)
                 {
-                    check = true;
-                    ans = MIN(ans,dp[u][v]+dp[v][u]);
+                    is_exist = true;
+                    result = min(result,dp[from][to]+dp[to][from]);
                 }
             }
         }
     }
     
-    if(!check)
-        cout << -1 << '\n';
-    else
-        cout << ans << '\n';
+    if(is_exist)
+        return result;
+    return -1;
+}
+
+int main(int argc,char* argv[])
+{
+    input();
+    cout << solve() << endl;
     return 0;
 }
