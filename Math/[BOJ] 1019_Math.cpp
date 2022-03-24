@@ -6,7 +6,7 @@
 using namespace std;
 using ll = long long;
 
-int N;
+int from,to;
 vector<ll> v(10,0);
 
 /*
@@ -32,49 +32,49 @@ void output()
     cout << endl;
 }
 
+void count(int num,int power)
+{
+    while(num)
+    {
+        v[num%10] += power;
+        num /= 10;
+    }
+}
+
 void solve()
 {
-    vector<int> idx;
-    string num = to_string(N);
-    int len = static_cast<int>(num.length());
+    int power = 1;
     
-    if(len == 1)
+    from = 1;
+    while(from <= to)
     {
-        for(int i = 1; i < N; i++)
-            v[i]++;
-        return;
-    }
-    
-    for(int i = 1; i < 10; i++)
-        v[i]++;
-    
-    int front = 10,rear = 9;
-    for(int i = 2; i < len; i++)
-    {
-        for(int j = 1; j < 10; j++)
-            v[j] += front;
-        for(int j = 0; j < 10; j++)
-            v[j] += rear*(i-1);
+        while(from%10 != 0 && from <= to)
+        {
+            count(from,power);
+            from++;
+        }
         
-        front *= 10;
-        rear  *= 10;
-    }
-    
-    int cur = num[0]-'0';
-    for(int i = 1; i < cur; i++)
-        v[i] += front;
-    idx.push_back(num[0]-'0');
-    
-    for(int i = 1; i < len; i++)
-    {
-        cur = num[i]-'0';
+        if(to < from)
+            return;
         
+        while(to%10 != 9 && from <= to)
+        {
+            count(to,power);
+            to--;
+        }
+        
+        from /= 10;
+        to /= 10;
+        
+        for(int i = 0; i < 10; i++)
+            v[i] += (to-from+1)*power;
+        power *= 10;
     }
 }
 
 int main(int argc,char* argv[])
 {
-    cin >> N;
+    cin >> to;
     solve();
     output();
     return 0;
