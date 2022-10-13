@@ -7,7 +7,6 @@
 using namespace std;
 
 int result = 0;
-vector<int> check(25);
 vector<string> map(5);
 vector<pair<int,int>> pos(7);
 
@@ -78,15 +77,11 @@ void dfs(int depth, int cur)
     
     for(int i = cur; i < 25; i++)
     {
-        if(check[i]) continue;
-        
         int y = i/5;
         int x = i%5;
         
-        check[i] = 1;
         pos[depth] = {y, x};
         dfs(depth+1, i+1);
-        check[i] = 0;
     }
 }
 
@@ -97,3 +92,4 @@ int main(int argc, char* argv[])
     cout << result << endl;
     return 0;
 }
+
